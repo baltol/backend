@@ -17,6 +17,38 @@ import { db } from '../database';
 /*
 **/
 export class UsersRouter {
+  /**
+   * 
+   * Get Single User
+   * @param req 
+   * @param res 
+   * @param next 
+   */
+  public static getUser(req: Request, res: Response, next: NextFunction){
+    // get the user id from the request
+    const userId = parseInt(req.params.id, 10);
+    // test the connection to the database
+    db.connect()
+      .then((obj: pgPromise.IConnected<{}>) => {
+        // console.log("testing connection");
+        // obj.done(); // success, release the connection;
+      })
+      .catch((error) => {
+        // console.log("ERROR:", error.message);
+      });
+    // db.one('SELECT * FROM public."Users" WHERE "User_Id" = $1', userId)
+      db.any('SELECT row_to_json(t) FROM (SELECT u.*, json_agg(p) FROM public."Users" u JOIN public."Permissions" p ON u."Role" = p."Role" WHERE u."User_Id" = $1 GROUP BY u."User_Id") t ', userId)
+      .then((data) => {
+        res.status(200)
+          .json({
+            data,
+            message: `Retrieved User data for User Id ${userId}`,
+            status: 'success'
+          });
+         
+      })
+      .catch((err) => next(err));
+  }
 
   /**
    * GET all Users.
@@ -30,8 +62,7 @@ export class UsersRouter {
       .catch((error) => {
         // console.log("ERROR:", error.message);
       });
-    // res.send(Users);
-    db.any('SELECT * FROM public."Users"')
+    db.any('SELECT row_to_json(t) FROM (SELECT u.*, json_agg(p) FROM "Users" u JOIN public."Permissions" p ON u."Role" = p."Role" GROUP BY u."User_Id") t	')
       .then((data) => {
         res.status(200)
           .json({
@@ -39,7 +70,7 @@ export class UsersRouter {
             message: 'Retrieved ALL Users',
             status: 'success'
           });
-        // console.log(data);
+
       })
       .catch((err) => next(err));
   }

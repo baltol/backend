@@ -8,7 +8,9 @@ export const app = express();
 
 const version = `v${AppConstants.API_VERSION}`;
 
-// Users
+// GET Single User
+app.use(`/api/${version}/users/:id`, UsersRouter.getUser);
+// GET All Users
 app.use(`/api/${version}/users`, UsersRouter.getAll);
 
 // Events
