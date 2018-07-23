@@ -1,4 +1,5 @@
 'use strict';
+import * as bodyParser from 'body-parser';
 import * as express from 'express';
 
 import { UsersRouter } from './routes/UserRouter';
@@ -8,11 +9,15 @@ export const app = express();
 
 const version = `v${AppConstants.API_VERSION}`;
 
-// GET Single User
-app.use(`/api/${version}/users/:id`, UsersRouter.getUser);
-// GET All Users
-app.use(`/api/${version}/users`, UsersRouter.getAll);
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
+// GET Single User
+app.get(`/api/${version}/users/:id`, UsersRouter.getUser);
+// GET All Users
+app.get(`/api/${version}/users`, UsersRouter.getAll);
+// CREATE User
+app.post(`/api/${version}/users`, UsersRouter.createUser)
 // Events
 
 // Default

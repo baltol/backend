@@ -74,4 +74,21 @@ export class UsersRouter {
       })
       .catch((err) => next(err));
   }
+  /**
+   * Create new user
+   */
+  public static createUser(req: Request, res: Response, next: NextFunction) {
+    // = parseInt(req.body.users, 10);
+    db.none('INSERT INTO public."Users"("Username", "Email", "Password", "Role") VALUES ({$username}, {$email}, {$password},{$role})', req.body)
+      .then(() => {
+        res.status(200)
+          .json({
+            message: 'Insert sucessful',
+            status: 'success'
+          });
+      })
+      .catch((err) => {
+        return next(err);
+      });
+  }
 }
