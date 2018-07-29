@@ -1,7 +1,12 @@
+import * as bcrypt from 'bcrypt'; // hashing library for passwords
 import { NextFunction, Request, Response } from 'express';
+import * as jwt from 'jsonwebtoken';
 import * as pgPromise from 'pg-promise';
 
+import { config } from '../../config/config'; // contains key of secret for decoding token
 import { db } from '../database';
+import { secretKey } from '../../config/secret';
+
 /**
  * Test making call
  */
@@ -24,6 +29,13 @@ export class UsersRouter {
    * @param res 
    * @param next 
    */
+  // function that takes a user and returns an encoded token that is created with at subject and timestamp
+  public static tokenForUser(user:any){
+    const timestamp = new Date().getTime()
+    const secretToken = jwt.sign({ id: user, iat: timestamp } , secretKey.secret);
+    return secretToken;
+    // return jwt.encode({sub:user.username, iat:timestamp}, config.secret);
+  }
   public static getUser(req: Request, res: Response, next: NextFunction){
     // get the user id from the request
     const userId = parseInt(req.params.id, 10);
@@ -42,7 +54,6 @@ export class UsersRouter {
         res.status(200)
           .json({
             data,
-            message: `Retrieved User data for User Id ${userId}`,
             status: 'success'
           });
          
@@ -64,31 +75,60 @@ export class UsersRouter {
       });
     db.any('SELECT row_to_json(t) FROM (SELECT u.*, json_agg(p) FROM "Users" u JOIN public."Permissions" p ON u."Role" = p."Role" GROUP BY u."User_Id") t	')
       .then((data) => {
-        res.status(200)
-          .json({
+        res.json({
             data,
-            message: 'Retrieved ALL Users',
-            status: 'success'
+            success: 'success'
           });
 
       })
       .catch((err) => next(err));
   }
-  /**
-   * Create new user
-   */
-  public static createUser(req: Request, res: Response, next: NextFunction) {
-    // = parseInt(req.body.users, 10);
-    db.none('INSERT INTO public."Users"("Username", "Email", "Password", "Role") VALUES ({$username}, {$email}, {$password},{$role})', req.body)
-      .then(() => {
-        res.status(200)
+  // function for signing up a new user
+  public static signUp(req: Request, res: Response, next: NextFunction) {
+    const username = req.body.username;
+    const email = req.body.email;
+    const password = req.body.password;
+    const saltRounds = 12;
+    if(!email || !password){
+      res.status(422).send({error: 'You must provide an email and password'})
+  }
+  bcrypt.hash(password, saltRounds)
+  .then((hash) => {
+    // call the createUser query 
+    db.one('INSERT INTO public."Users"("Username", "Email", "Password")' + 'VALUES ($1, $2, $3) RETURNING *', [username, email, hash])
+      .then((data) => {
+        const newUser = UsersRouter.tokenForUser(data);
+        res.status(201)
           .json({
-            message: 'Insert sucessful',
-            status: 'success'
+            status: 'success',
+            token:  newUser      
           });
       })
       .catch((err) => {
-        return next(err);
-      });
+        return next(err)
+        })
+      })
+    .catch((err) => {
+      return next(err);
+    });
+    }
+  // function for logging in a user
+  public static login(req: any, res: any, next: NextFunction) {
+    const userToken = this.tokenForUser(req.user)
+    res.send({ token: userToken})
+   } 
+  /**
+   * Function to find the user by Id in the database
+   */
+  public static findUserById(id: number){
+    return db.oneOrNone('SELECT * FROM public."Users" WHERE u."User_Id" = $1 ', [id]);
+  }
+  /**
+   * Function to verify if the email address exists in the database
+   * @param email 
+   */
+  public static verifyUser(email: string) {
+    const query = 'SELECT * FROM public."Users" WHERE "Email"=$1';
+    return db.oneOrNone(query,[email]);
   }
 }
