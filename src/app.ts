@@ -7,7 +7,7 @@ import * as passportJwt from 'passport-jwt'
 import * as LocalStrategy from 'passport-local'
 
 import { secretKey } from './../config/secret'; // contains key of secret for decoding token
-import { UsersRouter } from './routes/UserRouter';
+import { UserRouter } from './routes/UserRouter';
 import { AppConstants } from './utils/AppConstants';
 
 export const app = express();
@@ -22,18 +22,18 @@ app.use(passport.session());
 // passport authentication strategies
 
 const jwtStrategy = passportJwt.Strategy;
-const extractJwt = passportJwt.ExtractJwt; 
+const extractJwt = passportJwt.ExtractJwt;
 
 // create local strategy
 
-const localOptions = {usernameField: 'email'}
+const localOptions = { usernameField: 'email' }
 
 const localLogin = new LocalStrategy.Strategy(localOptions, (email, password, done) => {
-    return UsersRouter.verifyUser(email)
+    return UserRouter.verifyUser(email)
         .then((validUser) => {
             bcrypt.compare(password, validUser.password)
                 .then((validPassword) => {
-                    if(validPassword) {
+                    if (validPassword) {
                         return done(null, validUser)
                     }
                     return done(null, false)
@@ -48,11 +48,11 @@ const jwtOptions = {
     secretOrKey: secretKey.secret,
 }
 
-// create jwt Strategy 
+// create jwt Strategy
 const jwtLogin = new jwtStrategy(jwtOptions, (payload: any, done: any) => {
-    return UsersRouter.findUserById(payload.sub)
+    return UserRouter.findUserById(payload.sub)
         .then((foundUser) => {
-            if(foundUser) {
+            if (foundUser) {
                 return done(null, foundUser)
             }
             return done(null, false)
@@ -63,25 +63,25 @@ const jwtLogin = new jwtStrategy(jwtOptions, (payload: any, done: any) => {
 passport.use(jwtLogin)
 passport.use(localLogin)
 
-const requireAuth = passport.authenticate('jwt', {session: false})
+const requireAuth = passport.authenticate('jwt', { session: false })
 // passport middleware. Session is set to false since JWT doesn't require sessions on the server
-const requireSignIn = passport.authenticate('local', {session: false})
+const requireSignIn = passport.authenticate('local', { session: false })
 // GET Single User
-app.get(`/api/${version}/users/:id`, UsersRouter.getUser);
+app.get(`/api/${version}/users/:id`, UserRouter.getUser);
 // GET All Users
-app.get(`/api/${version}/users`, UsersRouter.getAll);
+app.get(`/api/${version}/users`, UserRouter.getAll);
 // SignUp User
-app.post(`/api/${version}/users`, UsersRouter.signUp)
+app.post(`/api/${version}/users`, UserRouter.signUp)
 // Login User
-app.post(`/api/${version}/login`, UsersRouter.login)
+app.post(`/api/${version}/login`, UserRouter.login)
 // Events
 
-// Default Route requires authorization 
+// Default Route requires authorization
 const router = express.Router();
-router.get('/', requireAuth,(req, res) => res.json({
+router.get('/', requireAuth, (req, res) => res.json({
     message: 'Hello World'
-  }));
+}));
 // login route requires authorization
-router.post('/sign-in', requireSignIn, UsersRouter.login)
+router.post('/sign-in', requireSignIn, UserRouter.login)
 
 app.use('/', router);
