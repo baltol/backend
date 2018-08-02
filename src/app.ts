@@ -1,12 +1,12 @@
 'use strict';
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt'; // hashing library for passwords
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import * as passport from 'passport';
 import * as passportJwt from 'passport-jwt'
 import * as LocalStrategy from 'passport-local'
 
-import { secretKey } from './../config/secret'; // contains key of secret for decoding token
+import { secretKey } from '../config/secret'; // contains key of secret for decoding token
 import { UserRouter } from './routes/UserRouter';
 import { AppConstants } from './utils/AppConstants';
 
@@ -26,21 +26,25 @@ const extractJwt = passportJwt.ExtractJwt;
 
 // create local strategy
 
-const localOptions = { usernameField: 'email' }
+const localOptions = { usernameField: 'email'};
+
+/**
+ * Sign in using Email and Password.
+ */
 
 const localLogin = new LocalStrategy.Strategy(localOptions, (email, password, done) => {
     return UserRouter.verifyUser(email)
         .then((validUser) => {
-            bcrypt.compare(password, validUser.password)
-                .then((validPassword) => {
+              bcrypt.compare(password, validUser.Password,)
+                 .then((validPassword: boolean) => {
                     if (validPassword) {
                         return done(null, validUser)
-                    }
-                    return done(null, false)
-                })
-                .catch(err => done(err, false))
-        })
-})
+                    }           
+        return done(null, false)
+    })
+    .catch(err => done(err, false))
+        });
+});
 
 // setup options for JWT strategy
 const jwtOptions = {
@@ -71,9 +75,8 @@ app.get(`/api/${version}/users/:id`, UserRouter.getUser);
 // GET All Users
 app.get(`/api/${version}/users`, UserRouter.getAll);
 // SignUp User
-app.post(`/api/${version}/users`, UserRouter.signUp)
-// Login User
-app.post(`/api/${version}/login`, UserRouter.login)
+app.post(`/api/${version}/signUp`, UserRouter.signUp)
+
 // Events
 
 // Default Route requires authorization
@@ -81,7 +84,7 @@ const router = express.Router();
 router.get('/', requireAuth, (req, res) => res.json({
     message: 'Hello World'
 }));
-// login route requires authorization
-router.post('/sign-in', requireSignIn, UserRouter.login)
+// Login User that requires authentication
+router.post(`/api/${version}/login`, requireSignIn, UserRouter.login)
 
 app.use('/', router);

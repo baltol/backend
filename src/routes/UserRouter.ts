@@ -1,9 +1,10 @@
 import * as bcrypt from 'bcrypt'; // hashing library for passwords
 import { NextFunction, Request, Response } from 'express';
-import * as jwt from 'jsonwebtoken';
+import * as jwt from 'jwt-simple';
 import * as pgPromise from 'pg-promise';
 
 // import { config } from '../../config/config'; // contains key of secret for decoding token
+
 import { secretKey } from '../../config/secret';
 import { db } from '../database';
 
@@ -31,11 +32,11 @@ export class UserRouter {
    * @param next
    */
   // function that takes a user and returns an encoded token that is created with at subject and timestamp
-  public static tokenForUser(user: any) {
+  public static tokenForUser(data: any) {
     const timestamp = new Date().getTime()
-    const secretToken = jwt.sign({ id: user, iat: timestamp }, secretKey.secret);
+    // const secretToken = jwt.sign({ sub: user.id, iat: timestamp }, secretKey.secret);
+    const secretToken = jwt.encode({sub: data, iat: timestamp}, secretKey.secret)
     return secretToken;
-    // return jwt.encode({sub:user.username, iat:timestamp}, config.secret);
   }
   public static getUser(req: Request, res: Response, next: NextFunction) {
     // get the user id from the request
@@ -123,8 +124,8 @@ export class UserRouter {
       });
   }
   // function for logging in a user
-  public static login(req: any, res: any, next: NextFunction) {
-    const userToken = this.tokenForUser(req.user)
+  public static login(req: Request, res: Response, next: NextFunction) {
+    const userToken = UserRouter.tokenForUser(req.body);
     res.send({ token: userToken })
   }
   /**
@@ -137,8 +138,8 @@ export class UserRouter {
    * Function to verify if the email address exists in the database
    * @param email
    */
-  public static verifyUser(email: string) {
+  public static verifyUser(email: any) {
     const query = 'SELECT * FROM public."Users" WHERE "Email"=$1';
-    return db.oneOrNone(query, [email]);
+    return db.oneOrNone(query,[email]);
   }
 }
