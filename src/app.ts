@@ -1,6 +1,7 @@
 'use strict';
 import * as bcrypt from 'bcrypt'; // hashing library for passwords
 import * as bodyParser from 'body-parser';
+import * as  cors from 'cors';
 import * as express from 'express';
 import * as passport from 'passport';
 import * as passportJwt from 'passport-jwt'
@@ -11,6 +12,15 @@ import { UserRouter } from './routes/UserRouter';
 import { AppConstants } from './utils/AppConstants';
 
 export const app = express();
+
+const options:cors.CorsOptions = {
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token'],
+    credentials: true,
+    methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
+    origin: 'http://localhost:3000',
+  };
+// use cors middleware
+app.use(cors(options));
 
 const version = `v${AppConstants.API_VERSION}`;
 
@@ -66,25 +76,29 @@ const jwtLogin = new jwtStrategy(jwtOptions, (payload: any, done: any) => {
 // tell passport to use this strategy
 passport.use(jwtLogin)
 passport.use(localLogin)
-
-const requireAuth = passport.authenticate('jwt', { session: false })
+// protecting routes using passport
+// const requireAuth = passport.authenticate('jwt', { session: false })
 // passport middleware. Session is set to false since JWT doesn't require sessions on the server
 const requireSignIn = passport.authenticate('local', { session: false })
+// options for cors middleware
+
 // GET Single User
 app.get(`/api/${version}/users/:id`, UserRouter.getUser);
 // GET All Users
 app.get(`/api/${version}/users`, UserRouter.getAll);
 // SignUp User
 app.post(`/api/${version}/signUp`, UserRouter.signUp)
-
+// Login User that requires authentication
+app.post(`/api/${version}/login`, requireSignIn, UserRouter.login)
 // Events
 
 // Default Route requires authorization
 const router = express.Router();
-router.get('/', requireAuth, (req, res) => res.json({
+
+
+router.get('/', (req, res) => res.json({
     message: 'Hello World'
 }));
-// Login User that requires authentication
-router.post(`/api/${version}/login`, requireSignIn, UserRouter.login)
+
 
 app.use('/', router);
