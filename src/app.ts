@@ -88,7 +88,7 @@ app.get(`/${prefix}/users`, UserRouter.getAll);
 app.post(`/${prefix}/signUp`, UserRouter.signUp)
 
 // Events
-app.get(`/${prefix}/events`, requireSignIn, EventRouter.getEvents)
+app.get(`/${prefix}/events`, EventRouter.getEvents)
 
 // Default Route requires authorization
 const router = express.Router();
