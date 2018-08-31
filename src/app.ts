@@ -6,6 +6,7 @@ import * as passport from 'passport';
 import * as passportJwt from 'passport-jwt'
 import * as LocalStrategy from 'passport-local'
 
+import { EventRouter } from './routes/EventRouter';
 import { UserRouter } from './routes/UserRouter';
 import { AppConstants } from './utils/AppConstants';
 import { envConfig } from './utils/envConfig'; // Environment-specific configuration
@@ -87,6 +88,7 @@ app.get(`/${prefix}/users`, UserRouter.getAll);
 app.post(`/${prefix}/signUp`, UserRouter.signUp)
 
 // Events
+app.get(`/${prefix}/events`, requireSignIn, EventRouter.getEvents)
 
 // Default Route requires authorization
 const router = express.Router();
