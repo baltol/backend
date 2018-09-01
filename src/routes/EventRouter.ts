@@ -30,6 +30,4 @@ export class EventRouter {
     EventService.getEvents(pageNum, pageSize)
       .then(paginatedEventResponse => res.json(paginatedEventResponse))
   }
-
-  private static MAX_PAGE_SIZE = 100;
 }
