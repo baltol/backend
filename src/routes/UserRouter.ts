@@ -1,11 +1,10 @@
 import * as bcrypt from 'bcrypt'; // hashing library for passwords
 import { NextFunction, Request, Response } from 'express';
-import * as jwt from 'jwt-simple';
+
 import * as pgPromise from 'pg-promise';
 
 // import { config } from '../../config/config'; // contains key of secret for decoding token
 
-import { secretKey } from '../../config/secret';
 import { db } from '../database';
 import { IDBUser } from '../interfaces/database/IDBUser';
 import { UserService } from '../services/UserService';

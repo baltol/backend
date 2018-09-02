@@ -59,17 +59,10 @@
     "@types/express-validator": "^3.0.0",
     "@types/jsonwebtoken": "^7.2.7",
     "@types/jwt-simple": "^0.5.33",
-<<<<<<< HEAD
     "@types/mocha": "^2.2.32",
     "@types/node": "^10.5.1",
     "@types/passport": "^0.4.6",
     "@types/passport-jwt": "^3.0.1",
-=======
-    "@types/passport-jwt": "^3.0.1",
-    "@types/mocha": "^2.2.32",
-    "@types/node": "^10.5.1",
-    "@types/passport": "^0.4.6",
->>>>>>> 93aafaa35619332d9e870838a2429cb9d76e51d6
     "@types/passport-local": "^1.0.33",
     "chai": "^3.5.0",
     "chai-http": "^4.0.0",
