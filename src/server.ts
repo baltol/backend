@@ -4,14 +4,15 @@
  */
 import * as http from 'http';
 
-import { config } from '../config/config';
 import { app } from './app';
+import { envConfig } from './utils/envConfig';
 
 // listen for the connection
 const server = http.createServer(app);
-server.listen(config.port, (err: Error) => {
+server.listen(envConfig.port, (err: Error) => {
   if (err) {
     // console.error(err)
   }
-  // console.info('Server started on port %s.', config.port)
+  // tslint:disable-next-line:no-console
+  console.info('Server started on port %s.', envConfig.port);
 });

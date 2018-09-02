@@ -1,4 +1,7 @@
-.gitignore
 /node_modules
 /dist
+<<<<<<< HEAD
 /config/secret.ts
+=======
+src/config.ts
+>>>>>>> 93aafaa35619332d9e870838a2429cb9d76e51d6

@@ -1,10 +1,9 @@
 import * as pgPromise from 'pg-promise';
+import { envConfig } from './utils/envConfig';
 
 const pgp = pgPromise();
-// declaring the connection to the database
-const connection = 'postgres://postgres:@localhost:5432/s3c_db_dev';
 
-export const db = pgp(connection);
+export const db = pgp(envConfig.postgresUri);
 // test the connection to the database
 db.connect()
   .then(connResponse => {

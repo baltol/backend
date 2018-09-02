@@ -22,5 +22,5 @@ Similarly, clone the [frontend](https://github.com/Syna3C/frontend) repository a
 
 Run the service locally
 ```bash
-npm start
+npm start:local
 ```

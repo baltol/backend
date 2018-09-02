@@ -1,0 +1,2 @@
+-- PostGIS
+CREATE EXTENSION postgis;
