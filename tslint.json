@@ -5,6 +5,14 @@
   ],
   "rules": {
     "no-default-export": true,
+    "trailing-comma": [
+      true,
+      {
+        "multiline": "never",
+        "singleline": "never",
+        "esSpecCompliant": true
+      }
+    ],
     "variable-name": [
       true,
       "ban-keywords",
