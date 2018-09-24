@@ -7,9 +7,11 @@ import * as passportJwt from 'passport-jwt'
 import * as LocalStrategy from 'passport-local'
 
 import { EventRouter } from './routes/EventRouter';
+import { UserRouterSchema } from './routes/requestSchemas/UserRouterSchema';
 import { UserRouter } from './routes/UserRouter';
 import { AppConstants } from './utils/AppConstants';
 import { envConfig } from './utils/envConfig'; // Environment-specific configuration
+import { ValidationUtil } from './utils/ValidationUtil';
 
 export const app = express();
 
@@ -36,6 +38,10 @@ const localOptions = { usernameField: 'email' };
 const localLogin = new LocalStrategy.Strategy(localOptions, (email, password, done) => {
   return UserRouter.verifyUser(email)
     .then((dbUser) => {
+      if (!dbUser) {
+        return done(null, false)
+      }
+
       bcrypt.compare(password, dbUser.password)
         .then((validPassword: boolean) => {
           if (validPassword) {
@@ -77,7 +83,7 @@ if (process.env.NODE_ENV === 'local') {
   });
 }
 
-const requireAuth = passport.authenticate('jwt', { session: false })
+// const requireAuth = passport.authenticate('jwt', { session: false })
 // passport middleware. Session is set to false since JWT doesn't require sessions on the server
 const requireSignIn = passport.authenticate('local', { session: false })
 // GET Single User
@@ -90,15 +96,10 @@ app.post(`/${prefix}/signUp`, UserRouter.signUp)
 // Events
 app.get(`/${prefix}/events`, EventRouter.getEvents)
 
-// Default Route requires authorization
-const router = express.Router();
-router.get('/', requireAuth, (req, res) => res.json({
-  message: 'Hello World'
-}));
-router.get('/hello-world', (req, res) => res.json({
-  message: 'Hello World'
-}));
 // Login User that requires authentication
-router.post(`/${prefix}/login`, requireSignIn, UserRouter.login)
+app.post(`/${prefix}/login`,
+  (req, res, next) => ValidationUtil.validateRequest(req, res, next, UserRouterSchema.LOGIN, 'body'),
+  requireSignIn, UserRouter.login)
 
-app.use('/', router);
+app.get(`/${prefix}/`, (req, res) => res.send('<h1>Syna3C backend</h1><p>Visit <a href="https://github.com/Syna3C/backend">GitHub</a> for more information</p>'));
+app.get('/', (req, res) => res.redirect(`/${prefix}/`));

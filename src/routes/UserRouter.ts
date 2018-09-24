@@ -5,6 +5,8 @@ import * as pgPromise from 'pg-promise';
 import { db } from '../database';
 import { IDBUser } from '../interfaces/database/IDBUser';
 import { UserService } from '../services/UserService';
+import { ValidationUtil } from '../utils/ValidationUtil';
+import { UserRouterSchema as Schema } from './requestSchemas/UserRouterSchema';
 
 export class UserRouter {
   /**
@@ -14,6 +16,7 @@ export class UserRouter {
    * @param res
    * @param next
    */
+  @ValidationUtil.decorator.validateRequest(Schema.GET_USER, 'params')
   public static getUser(req: Request, res: Response, next: NextFunction) {
     // get the user id from the request
     const userId = parseInt(req.params.id, 10);
@@ -38,25 +41,22 @@ export class UserRouter {
       .catch((err) => next(err));
   }
   // function for signing up a new user
+  @ValidationUtil.decorator.validateRequest(Schema.SIGN_UP, 'body')
   public static signUp(req: Request, res: Response, next: NextFunction) {
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
     const saltRounds = 12;
-    if (!email || !password) {
-      res.status(422).send({ error: 'You must provide an email and password' })
-    }
+
     bcrypt.hash(password, saltRounds)
       .then(hash => UserService.insertUser(username, email, hash))
       .then(dbUser => UserService.findUserWithPermissionsById(dbUser.userId))
-      .then(userWithPermissions => {
-        res.status(201)
-          .json({
-            token: UserService.generateToken(userWithPermissions),
-            user: userWithPermissions
-          })
-      })
-      .catch(err => next(err));
+      .then(userWithPermissions => res.status(201)
+        .json({
+          token: UserService.generateToken(userWithPermissions),
+          user: userWithPermissions
+        })
+        , err => next(err));
   }
   // function for logging in a user
   public static login(req: Request, res: Response, next: NextFunction) {
