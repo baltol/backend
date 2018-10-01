@@ -1,4 +1,5 @@
 import { db } from '../database';
+import { IDBEvent } from '../interfaces/database/IDBEvent';
 import { IEventResponse } from '../interfaces/response/IEventResponse';
 import { IPaginatedResponse } from '../interfaces/response/IPaginatedResponse';
 import { PaginationUtil } from '../utils/PaginationUtil';
@@ -42,5 +43,29 @@ export class EventService {
 
         return PaginationUtil.createPaginatedResponse(events, 'events', pageNum, pageSize, numItems);
       })
+  }
+
+  public static insertEvent(body: IEventResponse): Promise<IDBEvent> {
+    // tslint:disable:prefer-object-spread
+    const dBEvent = Object.assign({}, {
+      address: body.address.line1,
+      address2: body.address.line2,
+      city: body.address.city,
+      country: body.address.country,
+      createdBy: 1,
+      createdOn: new Date().toISOString(),
+      description: body.description,
+      endDate: body.endDate,
+      lastUpdated: new Date().toISOString(),
+      latitude: body.address.coordinates.latitude,
+      longitude: body.address.coordinates.longitude,
+      name: body.name,
+      startDate: body.startDate,
+      state: body.address.state,
+      status: body.status,
+      zip: body.address.zip
+    })
+
+    return db.one('INSERT INTO public."Events"(name, description, address, address2, city, state, country, zip, "createdBy", "createdOn", "lastUpdated", "startDate", "endDate") VALUES($<name>, $<description>, $<address>, $<address2>, $<city>, $<state>, $<country>, $<zip>, $<createdBy>, now(), now(), now(), now())', dBEvent);
   }
 }

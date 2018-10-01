@@ -95,6 +95,7 @@ app.post(`/${prefix}/signUp`, UserRouter.signUp)
 
 // Events
 app.get(`/${prefix}/events`, EventRouter.getEvents)
+app.post(`/${prefix}/events`, EventRouter.insertEvent) 
 
 // Login User that requires authentication
 app.post(`/${prefix}/login`,

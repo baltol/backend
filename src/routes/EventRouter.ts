@@ -26,4 +26,11 @@ export class EventRouter {
     EventService.getEvents(pageNum, pageSize)
       .then(paginatedEventResponse => res.json(paginatedEventResponse))
   }
+
+  // @ValidationUtil.decorator.validateRequest(Schema.INSERT_EVENT, 'query')
+  public static insertEvent(req: Request, res: Response, next: NextFunction) {
+    // return res.json(req.body)
+    EventService.insertEvent(req.body)
+      .then(insertEventResponse => res.json(insertEventResponse))
+  }
 }
