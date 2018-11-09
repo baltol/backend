@@ -66,6 +66,6 @@ export class EventService {
       zip: body.address.zip
     })
 
-    return db.one('INSERT INTO public."Events"(name, description, address, address2, city, state, country, zip, "createdBy", "createdOn", "lastUpdated", "startDate", "endDate") VALUES($<name>, $<description>, $<address>, $<address2>, $<city>, $<state>, $<country>, $<zip>, $<createdBy>, now(), now(), now(), now())', dBEvent);
+    return db.one('INSERT INTO public."Events"(name, description, address, address2, city, state, country, zip, "createdBy", "createdOn", "lastUpdated", "startDate", "endDate") VALUES($<name>, $<description>, $<address>, $<address2>, $<city>, $<state>, $<country>, $<zip>, $<createdBy>, $<createdOn>, $<lastUpdated>, $<startDate>, $<endDate>) RETURNING *', dBEvent);
   }
 }
