@@ -52,19 +52,24 @@ export class EventService {
       address2: body.address.line2,
       city: body.address.city,
       country: body.address.country,
-      createdBy: 1,
+      createdBy: body.createdBy,
       createdOn: new Date().toISOString(),
       description: body.description,
       endDate: body.endDate,
       lastUpdated: new Date().toISOString(),
-      latitude: body.address.coordinates.latitude,
-      longitude: body.address.coordinates.longitude,
       name: body.name,
       startDate: body.startDate,
       state: body.address.state,
-      status: body.status,
+      // status: body.status, TODO
       zip: body.address.zip
-    })
+    });
+
+    if (body.address.coordinates) {
+      Object.assign(dBEvent, {
+        latitude: body.address.coordinates.latitude,
+        longitude: body.address.coordinates.longitude
+      });
+    }
 
     return db.one('INSERT INTO public."Events"(name, description, address, address2, city, state, country, zip, "createdBy", "createdOn", "lastUpdated", "startDate", "endDate") VALUES($<name>, $<description>, $<address>, $<address2>, $<city>, $<state>, $<country>, $<zip>, $<createdBy>, $<createdOn>, $<lastUpdated>, $<startDate>, $<endDate>) RETURNING *', dBEvent);
   }

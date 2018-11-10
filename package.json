@@ -26,11 +26,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/express-jwt": "0.0.40",
     "bcrypt": "^3.0.1",
     "body-parser": "^1.18.3",
     "compression": "^1.7.3",
     "debug": "^3.2.5",
     "express": "^4.16.3",
+    "express-jwt": "^5.3.1",
     "faker": "^4.1.0",
     "helmet": "^3.13.0",
     "js-schema": "^1.0.1",

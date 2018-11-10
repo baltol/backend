@@ -29,8 +29,17 @@ export class EventRouter {
 
   // @ValidationUtil.decorator.validateRequest(Schema.INSERT_EVENT, 'query')
   public static insertEvent(req: Request, res: Response, next: NextFunction) {
-    // return res.json(req.body)
-    EventService.insertEvent(req.body)
-      .then(insertEventResponse => res.json(insertEventResponse))
+    // confirm that we are authorized before inserting
+    // FIXME there should be a better way to do this
+    //  EventRouter.spec will not have req.User
+    // so this breaks the tests
+    if (!req.user.sub.permissions.createEvents) {
+      res.status(401).json({status: 401})
+    } else {
+    const body = {...req.body, ...{ createdBy: req.user.sub.userId }};
+
+    EventService.insertEvent(body)
+        .then(insertEventResponse => res.json(insertEventResponse))
+      }
   }
 }

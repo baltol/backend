@@ -2,11 +2,13 @@
 import * as bcrypt from 'bcrypt'; // hashing library for passwords
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
+import * as jwt from 'express-jwt';
 import * as passport from 'passport';
 import * as passportJwt from 'passport-jwt'
 import * as LocalStrategy from 'passport-local'
 
 import { EventRouter } from './routes/EventRouter';
+import { EventRouterSchema } from './routes/requestSchemas/EventRouterSchema';
 import { UserRouterSchema } from './routes/requestSchemas/UserRouterSchema';
 import { UserRouter } from './routes/UserRouter';
 import { AppConstants } from './utils/AppConstants';
@@ -95,7 +97,11 @@ app.post(`/${prefix}/signUp`, UserRouter.signUp)
 
 // Events
 app.get(`/${prefix}/events`, EventRouter.getEvents)
-app.post(`/${prefix}/events`, EventRouter.insertEvent) 
+// Insert event following validation and authentication
+app.post(`/${prefix}/events`,
+  (req, res, next) => ValidationUtil.validateRequest(req, res, next, EventRouterSchema.INSERT_EVENT, 'body'),
+  jwt({ secret: jwtOptions.secretOrKey }),
+  EventRouter.insertEvent)
 
 // Login User that requires authentication
 app.post(`/${prefix}/login`,
